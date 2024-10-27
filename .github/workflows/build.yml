@@ -1,41 +1,52 @@
-name: LaTeX Build and Deploy
+name: Build and Deploy LaTeX
 
 on:
   push:
     branches:
-      - main  # Change to your branch if different
-  pull_request:
-    branches:
-      - main  # Change to your branch if different
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
-
+        
       - name: Set up TeX Live
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra texlive-bibtex-extra
+          sudo apt-get install -y texlive-latex-extra texlive-fonts-recommended texlive-latex-recommended texlive-pictures
 
       - name: Compile LaTeX
         run: |
           pdflatex main.tex
-          bibtex main
+          bibtex main  # This runs BibTeX for bibliography
           pdflatex main.tex
-          pdflatex main.tex
+          pdflatex main.tex  # Run it twice to ensure references are updated
 
-      - name: Move PDF to docs folder
+      - name: Create build branch
         run: |
+          git config --local user.email "you@example.com"
+          git config --local user.name "GitHub Actions"
+          git checkout -b build
           mkdir -p docs
-          mv main.pdf docs/
+          mv main.pdf docs/  # Move the generated PDF to the docs directory
+          git add docs/
+          git commit -m "Add compiled PDF to GitHub Pages"
+          git push --force origin build
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
-          publish_branch: gh-pages  # Change to your target branch if different
+          publish_branch: build
