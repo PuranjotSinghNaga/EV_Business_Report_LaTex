@@ -1,4 +1,4 @@
-name: Report Build and Deploy
+name: LaTeX Build and Deploy
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
       - name: Set up TeX Live
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra bibtex2html
+          sudo apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra texlive-bibtex-extra
 
       - name: Compile LaTeX
         run: |
