@@ -1,0 +1,41 @@
+name: Report Build and Deploy
+
+on:
+  push:
+    branches:
+      - main  # Change to your branch if different
+  pull_request:
+    branches:
+      - main  # Change to your branch if different
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra bibtex2html
+
+      - name: Compile LaTeX
+        run: |
+          pdflatex main.tex
+          bibtex main
+          pdflatex main.tex
+          pdflatex main.tex
+
+      - name: Move PDF to docs folder
+        run: |
+          mkdir -p docs
+          mv main.pdf docs/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages  # Change to your target branch if different
